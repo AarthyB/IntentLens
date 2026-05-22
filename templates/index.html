@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IntentLens — Relational Intent Classifier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+<div class="shell">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🔍</div>
+    <div><h1>IntentLens</h1><p>NLP · DEEP LEARNING</p></div>
+  </div>
+
+  <div>
+    <div class="slabel">Intent Labels</div>
+    <div class="lg">
+      <div class="lg-item"><div class="lg-dot" style="background:var(--plat)"></div><div><div class="lg-name">🤝 Platonic</div><div class="lg-desc">Friendly, social, group-oriented. No romantic subtext.</div></div></div>
+      <div class="lg-item"><div class="lg-dot" style="background:var(--rom)"></div><div><div class="lg-name">💕 Romantic</div><div class="lg-desc">Affection, longing, emotional pursuit.</div></div></div>
+      <div class="lg-item"><div class="lg-dot" style="background:var(--amb)"></div><div><div class="lg-name">🤔 Ambiguous</div><div class="lg-desc">Mixed or unclear — could go either way.</div></div></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="slabel">Session Stats</div>
+    <div class="sg">
+      <div class="sc"><div class="sv" id="sTotal">0</div><div class="sl">Messages</div></div>
+      <div class="sc"><div class="sv" id="sAvgMs">—</div><div class="sl">Avg ms</div></div>
+      <div class="sc"><div class="sv" id="sAvgConf">—</div><div class="sl">Avg conf</div></div>
+      <div class="sc"><div class="sv" id="sTopLabel">—</div><div class="sl">Top label</div></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="slabel">Label Breakdown</div>
+    <div class="breakdown">
+      <div class="bd-row"><span class="bd-lbl">🤝 Platonic</span><div class="bd-track"><div class="bd-fill platonic" id="bdPlat" style="width:0%"></div></div><span class="bd-n" id="bdPlatN">0</span></div>
+      <div class="bd-row"><span class="bd-lbl">💕 Romantic</span><div class="bd-track"><div class="bd-fill romantic" id="bdRom"  style="width:0%"></div></div><span class="bd-n" id="bdRomN">0</span></div>
+      <div class="bd-row"><span class="bd-lbl">🤔 Ambiguous</span><div class="bd-track"><div class="bd-fill ambiguous" id="bdAmb"  style="width:0%"></div></div><span class="bd-n" id="bdAmbN">0</span></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="slabel">Model</div>
+    <div class="model-tag"><div class="dot-live"></div>Transformer · 3-layer · 4-head attn</div>
+    <div style="margin-top:8px;font-size:.68rem;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.8">
+      Accuracy: <span id="mAcc" style="color:var(--txt)">loading…</span><br>
+      Macro F1: <span id="mF1"  style="color:var(--txt)">—</span>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">IntentLens v2.0<br>Context-Aware NLP<br>Aarthy Besant Arunkumar</div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-info">
+      <h2>Conversation Analysis</h2>
+      <p>Transformer deep model · context-aware · 96.9% accuracy</p>
+    </div>
+    <div class="topbar-actions">
+      <div class="ctx-badge"><div class="dot-live"></div><span id="ctxCount">0 turns</span></div>
+      <button class="tb-btn" onclick="clearChat()">Clear</button>
+    </div>
+  </div>
+
+  <div class="chat-scroll" id="chat">
+    <div class="welcome" id="welcome">
+      <div class="welcome-icon">💬</div>
+      <h2>What does this message really mean?</h2>
+      <p>Paste any message and I'll analyze the relational intent — then ask follow-up questions and I'll factor in the whole conversation.</p>
+      <div class="ex-grid">
+        <span class="ex-pill" onclick="useEx(this)">Why didn't you message me today? 📱</span>
+        <span class="ex-pill" onclick="useEx(this)">I can't stop thinking about you</span>
+        <span class="ex-pill" onclick="useEx(this)">Want to grab lunch with the crew?</span>
+        <span class="ex-pill" onclick="useEx(this)">I feel something I can't explain 🌀</span>
+        <span class="ex-pill" onclick="useEx(this)">You're like the sibling I never had</span>
+        <span class="ex-pill" onclick="useEx(this)">I miss you even when we just talked</span>
+        <span class="ex-pill" onclick="useEx(this)">But even a friend can say that, right?</span>
+        <span class="ex-pill" onclick="useEx(this)">Would you want to go on a date with me?</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-dock">
+    <div class="input-row">
+      <textarea id="inp" placeholder="Type a message to analyze, or ask a follow-up…" rows="1"
+        onkeydown="onKey(event)" oninput="resize(this)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="send()">
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div class="hint">Enter to send · Shift+Enter for new line · Ask follow-ups freely</div>
+  </div>
+</div>
+</div>
+
+<script src="{{ url_for('static', filename='index.js') }}"></script>
+</body>
+</html>
