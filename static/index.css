@@ -86,13 +86,14 @@ body::after{
   z-index:1;
   display:flex;
   height:100dvh;
-  max-width:1200px;
-  margin:0 auto
+  width:100%;
+  margin:0 auto;
 }
 
 /* sidebar */
 .sidebar{
-  width:268px;
+  width:320px;
+  min-width:320px;
   flex-shrink:0;
   border-right:1px solid var(--b1);
   display:flex;
@@ -710,5 +711,151 @@ textarea:focus{
   margin-top:6px
 }
 
-@media(max-width:700px){
-  .sidebar{display:none}.chat-scroll{padding:12px 14px 6px}.input-dock{padding:10px 14px 14px}.user-bubble,.reply-text{font-size:.84rem}.welcome h2{font-size:1.5rem}}
+@media (max-width: 768px){
+
+  html, body{
+    overflow:hidden;
+  }
+
+  .shell{
+    flex-direction:column;
+    height:100dvh;
+  }
+
+  /* MOBILE HEADER */
+  .sidebar{
+    width:100%;
+    height:auto;
+    border-right:none;
+    border-bottom:1px solid var(--b1);
+    padding:10px 14px;
+    gap:10px;
+    overflow:hidden;
+  }
+
+  /* compact logo row */
+  .logo{
+    gap:8px;
+  }
+
+  .logo-icon{
+    width:32px;
+    height:32px;
+    font-size:14px;
+  }
+
+  .logo h1{
+    font-size:1rem;
+  }
+
+  .logo p{
+    font-size:.52rem;
+  }
+
+  /* hide unnecessary sections */
+  .lg,
+  .breakdown,
+  .sidebar-footer,
+  .slabel{
+    display:none;
+  }
+
+  /* compact stats */
+  .sg{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding-bottom:2px;
+  }
+
+  .sc{
+    min-width:88px;
+    padding:8px;
+    flex-shrink:0;
+  }
+
+  .sv{
+    font-size:.9rem;
+  }
+
+  .sl{
+    font-size:.58rem;
+  }
+
+  .model-tag{
+    font-size:.58rem;
+    padding:3px 8px;
+    width:fit-content;
+  }
+
+  .main{
+    flex:1;
+    min-height:0;
+  }
+
+  .topbar{
+    padding:10px 14px;
+    gap:8px;
+  }
+
+  .topbar-info h2{
+    font-size:.92rem;
+  }
+
+  .topbar-info p{
+    display:none;
+  }
+
+  .chat-scroll{
+    padding:10px 12px;
+  }
+
+  .welcome{
+    padding:18px 8px;
+    min-height:auto;
+  }
+
+  .welcome h2{
+    font-size:1.3rem;
+  }
+
+  .welcome p{
+    font-size:.8rem;
+    margin-bottom:16px;
+  }
+
+  .ex-grid{
+    gap:6px;
+  }
+
+  .ex-pill{
+    font-size:.68rem;
+    padding:6px 10px;
+    white-space:normal;
+  }
+
+  .user-bubble{
+    max-width:90%;
+    font-size:.82rem;
+  }
+
+  .reply-text{
+    font-size:.8rem;
+  }
+
+  .input-dock{
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+    background:rgba(9,9,15,.96);
+    backdrop-filter:blur(12px);
+  }
+
+  textarea{
+    font-size:16px;
+    min-height:44px;
+  }
+
+  .send-btn{
+    width:44px;
+    height:44px;
+  }
+}
