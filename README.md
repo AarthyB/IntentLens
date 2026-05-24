@@ -1,238 +1,175 @@
-# IntentLens — Detecting Romantic, Platonic, and Ambiguous Intent in Text Conversations Using Deep Learning
+<div align="center">
 
-**Author:** Aarthy Besant Arunkumar  
-**Course:** Deep Learning  
-**Type:** Individual Project  
-**Live Demo:** [intentlens.onrender.com](https://intentlens.onrender.com)  
-**Repository:** [github.com/AarthyB/IntentLens](https://github.com/AarthyB/IntentLens)
+# 🔍 IntentLens
 
----
+**Deep learning system that classifies conversational text as Romantic 💕, Platonic 🤝, or Ambiguous 🤔**
 
-## Project Overview
+[![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
+[![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat&logo=pytorch&logoColor=white)](https://pytorch.org)
+[![Flask](https://img.shields.io/badge/Flask-000000?style=flat&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
+[![HuggingFace](https://img.shields.io/badge/HuggingFace-FFD21F?style=flat&logo=huggingface&logoColor=black)](https://huggingface.co)
+[![Render](https://img.shields.io/badge/Deployed_on-Render-46E3B7?style=flat&logo=render&logoColor=white)](https://intentlens.onrender.com)
 
-Conversational text often carries implied meaning that goes beyond its literal words. The same message can signal romantic interest, platonic friendship, or remain genuinely ambiguous — and even humans frequently disagree on the interpretation.
+🔗 **[Live Demo](https://intentlens.onrender.com)** · **[Repository](https://github.com/AarthyB/IntentLens)**
 
-**IntentLens** is a full-stack deep learning system that:
-- Classifies conversational text into **Platonic 🤝**, **Romantic 💕**, or **Ambiguous 🤔**
-- Compares three models: Logistic Regression, Bi-LSTM, and a custom Transformer
-- Serves a live context-aware chat interface with conversation history blending
-- Generates a complete evaluation report covering all proposal metrics
+</div>
 
 ---
 
-## Quick Start (Local)
+## 📖 About
 
-### Step 1 — Clone the repository
+Conversational text often carries implied meaning beyond its literal words. The same message can signal romantic interest, platonic friendship, or stay genuinely ambiguous — and even humans frequently disagree.
+
+**IntentLens** tackles this problem with a full-stack deep learning pipeline that:
+- Classifies input text into **Platonic**, **Romantic**, or **Ambiguous** with confidence scores
+- Compares **4 models**: Logistic Regression, Bi-LSTM, Custom Transformer, and DistilBERT
+- Serves a live **context-aware chat interface** with conversation history blending
+- Auto-generates a **13-file evaluation report** covering all proposal metrics
+
+---
+
+## 🏆 Results
+
+| Metric | **Transformer** | LR | LSTM |
+|---|---|---|---|
+| Accuracy | **0.981** | 0.974 | 0.964 |
+| F1 (macro) | **0.981** | 0.974 | 0.964 |
+| Ambiguous F1 | **0.988** | 0.963 | 0.975 |
+| Romantic ↔ Ambiguous errors | **5** | 9 | 9 |
+
+**5-Fold CV (LR):** 0.9795 ± 0.0061
+
+Key findings:
+- **Transformer > LR > LSTM** across all metrics — confirmed proposal hypothesis
+- **Romantic ↔ Ambiguous** is the dominant error mode across all models — as predicted
+- Context-aware inference (conversation history blending) improves multi-turn accuracy
+
+---
+
+## 🏗️ Model Architecture
+
+### Primary — Custom Transformer
+```
+text → tokenizer + <CLS>
+     → embedding (128d) + sinusoidal positional encoding
+     → 3× TransformerEncoderLayer (4 heads, 256 FFN, GELU, dropout=0.2)
+     → LayerNorm → mean pooling
+     → Dropout(0.3) → Linear(128→64) → GELU → Linear(64→3) → softmax
+     → (label, confidence %, probability distribution)
+```
+
+### All Models
+
+| Model | Description | Training Time |
+|---|---|---|
+| **Custom Transformer** | 3-layer encoder, 4 attention heads, 128d embeddings | ~3 min (CPU) |
+| **DistilBERT** | `distilbert-base-uncased` fine-tuned (66M params) | Optional |
+| **Bi-LSTM** | 2-layer bidirectional, 128 hidden units | ~5 min (CPU) |
+| **Logistic Regression** | TF-IDF baseline, unigrams–trigrams | < 5 seconds |
+
+---
+
+## 🚀 Quick Start
+
+### 1. Clone & install
+
 ```bash
 git clone https://github.com/AarthyB/IntentLens.git
 cd IntentLens
-```
-
-### Step 2 — Install dependencies
-```bash
 pip install -r requirements.txt
 ```
 
-### Step 3 — Run the web app
+### 2. Run the web app
+
 ```bash
 python app.py
 ```
-Open **http://localhost:5000** in your browser.
 
-> **First run:** Automatically generates the dataset and trains the deep model (~3 minutes on CPU). Every subsequent run loads saved weights instantly from `models/`.
+Open **http://localhost:5000** — on first run, the dataset is auto-generated and the model trains (~3 min). Subsequent runs load saved weights instantly from `models/`.
 
-### Step 4 — Optional: Run with DistilBERT instead
+### 3. Optional: Run with DistilBERT
+
 ```bash
 pip install transformers
 python app.py --transformer
 ```
 
-### Step 5 — Run full 3-model evaluation
+### 4. Full 3-model evaluation
+
 ```bash
 python evaluate_models.py
-```
-Saves 13 output files to `results/` — confusion matrices, F1 charts, training curves, error analysis, and a full text report.
+# Saves 13 output files to results/
 
-```bash
-python evaluate_models.py --skip-lstm     # faster (LR + Transformer only)
-python evaluate_models.py --output my_results
+python evaluate_models.py --skip-lstm      # Faster: LR + Transformer only
+python evaluate_models.py --output my_dir  # Custom output folder
 ```
 
-### Step 6 — Compare Custom Transformer vs DistilBERT
+### 5. Compare Custom Transformer vs DistilBERT
+
 ```bash
 python compare_transformers.py
 ```
 
 ---
 
-## File Structure
+## 📁 File Structure
 
 ```
 IntentLens/
+├── app.py                      # Flask server — main entry point
+├── evaluate_models.py          # Full 3-model comparison & evaluation
+├── compare_transformers.py     # Custom Transformer vs DistilBERT
+├── requirements.txt
+├── render.yaml                 # Render.com deployment config
 │
-├── app.py                        # Flask server — main entry point
-├── evaluate_models.py            # Full 3-model comparison & evaluation
-├── compare_transformers.py       # Custom Transformer vs DistilBERT
-├── requirements.txt              # Python dependencies
-├── render.yaml                   # Render.com deployment config
-├── .gitignore
-├── README.md
+├── templates/index.html        # Chat UI
+├── static/
+│   ├── index.css               # Dark-themed UI, animations, responsive layout
+│   └── index.js                # Frontend interaction & real-time predictions
 │
-├── templates/
-│   └── index.html            # Chat UI
-├──static/
-│   └── index.css             # Dark-themed UI styling, animations, responsive │layout
-│    └── index.js              # Frontend interaction logic and real-time │prediction handling
 ├── ml/
-│   ├── __init__.py
-│   ├── deep_model.py             # PRIMARY: Custom PyTorch Transformer
-│   ├── distilbert_model.py       # OPTIONAL: HuggingFace DistilBERT fine-tuning
-│   └── classifier.py            # LR baseline + input parser + reply builder
+│   ├── deep_model.py           # PRIMARY: Custom PyTorch Transformer
+│   ├── distilbert_model.py     # OPTIONAL: HuggingFace DistilBERT fine-tuning
+│   └── classifier.py           # LR baseline + input parser + reply builder
 │
 ├── data/
-│   ├── __init__.py
-│   ├── dataset_builder.py        # Synthetic dataset generation (~4,822 samples)
-│   └── dataset.csv               # Auto-generated on first run
+│   ├── dataset_builder.py      # Synthetic dataset generation (~4,822 samples)
+│   └── dataset.csv             # Auto-generated on first run
 │
-├── models/                       # Saved weights (auto-created on first run)
+├── models/                     # Saved weights (auto-created on first run)
 │   ├── deep/
-│   │   ├── model.pt              # Transformer weights
-│   │   ├── vocab.pkl             # Word vocabulary (10,000 tokens)
-│   │   ├── config.pkl            # Model hyperparameters
-│   │   └── history.pkl           # Training curves
-│   ├── tfidf.pkl                 # TF-IDF vectorizer
-│   └── lr.pkl                    # Logistic Regression weights
+│   │   ├── model.pt            # Transformer weights
+│   │   ├── vocab.pkl           # Word vocabulary (10,000 tokens)
+│   │   ├── config.pkl          # Model hyperparameters
+│   │   └── history.pkl         # Training curves
+│   ├── tfidf.pkl
+│   └── lr.pkl
 │
-└── results/                      # Generated by evaluate_models.py
+└── results/                    # Generated by evaluate_models.py
     ├── 00_evaluation_report.txt
     ├── 01_dataset_distribution.png
-    ├── 02_text_length_distribution.png
     ├── 03_confusion_matrices.png
     ├── 04_model_comparison.png
-    ├── 05_per_class_f1.png
     ├── 06_training_curves.png
-    ├── 07_romantic_ambiguous_confusion.png
     ├── 08_radar_chart.png
-    ├── 09_hyperparameter_sensitivity.png
     ├── 10_error_analysis.csv
-    ├── 11_error_distribution.png
-    ├── 12_cross_validation.png
-    └── 13_model_comparison_table.csv
+    └── ... (13 files total)
 ```
 
 ---
 
-## Models
-
-### Model 1 — Logistic Regression + TF-IDF (Classical Baseline)
-- **Features:** TF-IDF, max 6,000 features, unigrams–trigrams, sublinear TF
-- **Classifier:** Logistic Regression, C=2.0, LBFGS solver
-- **File:** `ml/classifier.py` — `IntentClassifier` class
-- **Training time:** < 5 seconds
-
-### Model 2 — Custom Transformer (Primary Deep Learning Model)
-- **Architecture:** 3× TransformerEncoder layers, 4 attention heads, 128d embeddings, 256d FFN
-- **Encoding:** Sinusoidal positional encoding, GELU activation, dropout=0.2
-- **Head:** Linear(128→64) → GELU → Dropout → Linear(64→3) → softmax
-- **Loss:** CrossEntropyLoss (class-balanced) | **Optimizer:** AdamW
-- **Scheduler:** Linear warmup + cosine decay
-- **File:** `ml/deep_model.py` — `DeepIntentTrainer` class
-- **Training time:** ~3 minutes (CPU)
-
-### Model 3 — Bidirectional LSTM (Neural Baseline)
-- **Architecture:** 2-layer BiLSTM, 128 hidden units, 64d embeddings
-- **Loss:** CrossEntropyLoss | **Optimizer:** Adam
-- **File:** `evaluate_models.py` — `train_lstm()` function (comparison only, not deployed)
-
-### Model 4 — DistilBERT (Optional Extension)
-- **Base:** `distilbert-base-uncased` (66M parameters, pretrained)
-- **Head:** Dropout(0.3) → Linear(768→256) → GELU → Dropout → Linear(256→3)
-- **File:** `ml/distilbert_model.py` — `DistilBERTTrainer` class
-- **Usage:** `python app.py --transformer`
-
----
-
-## Pipeline
-
-As specified in the project proposal:
-
-```
-text
- → word tokenizer + <CLS> token
- → embedding layer (128d) + sinusoidal positional encoding
- → 3× TransformerEncoderLayer (4 heads, 256 FFN, GELU, dropout=0.2)
- → LayerNorm → mean pooling over non-padding tokens
- → Dropout(0.3) → Linear(128→64) → GELU → Dropout(0.2) → Linear(64→3)
- → softmax → (label, confidence %, probability distribution)
-```
-
----
-
-## Evaluation Results
-
-Results from full evaluation run (`python evaluate_models.py`):
-
-| Metric | Transformer | LR | LSTM |
-|---|---|---|---|
-| Accuracy | **0.981** | 0.974 | 0.964 |
-| Precision (macro) | **0.981** | 0.974 | 0.965 |
-| Recall (macro) | **0.981** | 0.974 | 0.964 |
-| F1 (macro) | **0.981** | 0.974 | 0.964 |
-| Platonic F1 | 0.975 | 0.979 | 0.950 |
-| Romantic F1 | 0.979 | 0.979 | 0.967 |
-| Ambiguous F1 | **0.988** | 0.963 | 0.975 |
-
-**5-Fold CV (LR):** acc = 0.9795 ± 0.0061
-
-**Romantic ↔ Ambiguous errors** (primary error mode):
-
-| Model | R→A errors | A→R errors | Total |
-|---|---|---|---|
-| Transformer | 4 | 1 | **5** |
-| LR | 3 | 6 | **9** |
-| LSTM | 5 | 4 | **9** |
-
----
-
-## Key Findings
-
-1. **Transformer > LR > LSTM** on all metrics — confirms the proposal's expected outcome
-2. **Romantic ↔ Ambiguous** is the dominant error mode across all models — exactly as predicted
-3. The Transformer makes the fewest errors at the hardest boundary (only 5 total vs 9 for LR)
-4. Context-aware inference (conversation history blending) improves multi-turn accuracy
-5. Short informal text ("bro im so cooked") required targeted training examples
-
----
-
-## Deployment (Render)
-
-This project is deployed on [Render.com](https://render.com) using the included `render.yaml`.
-
-To deploy your own instance:
-
-1. Fork this repository
-2. Go to [render.com](https://render.com) → New → Web Service
-3. Connect your forked repository
-4. Render auto-detects `render.yaml` — click **Deploy**
-
-The app trains the model automatically on first boot if no saved weights are found.
-
-> **Note:** Render free tier sleeps after 15 minutes of inactivity. First visit after sleep takes ~30 seconds to wake up.
-
----
-
-## API Endpoints
+## 🌐 API Reference
 
 | Method | Route | Description |
 |---|---|---|
-| GET | `/` | Chat UI |
-| POST | `/api/analyze` | Classify text with conversation history context |
-| GET | `/api/health` | Server health + uptime |
-| GET | `/api/model/info` | Model accuracy + session stats |
-| POST | `/api/train` | Re-train models |
-| POST | `/api/reset` | Clear conversation history |
+| `GET` | `/` | Chat UI |
+| `POST` | `/api/analyze` | Classify text with conversation history |
+| `GET` | `/api/health` | Server health + uptime |
+| `GET` | `/api/model/info` | Model accuracy + session stats |
+| `POST` | `/api/train` | Re-train models |
+| `POST` | `/api/reset` | Clear conversation history |
 
-**Example request:**
+**Example:**
 ```bash
 curl -X POST https://intentlens.onrender.com/api/analyze \
   -H "Content-Type: application/json" \
@@ -241,16 +178,20 @@ curl -X POST https://intentlens.onrender.com/api/analyze \
 
 ---
 
-## Ethical Considerations
+## ☁️ Deploy Your Own
 
-- All training data is **synthetic** — no real personal conversations used
-- Predictions are **probabilistic**, not deterministic verdicts
-- Cultural and demographic variation is acknowledged but not modelled
-- System is intended for **research and demonstration only**
+This project includes a `render.yaml` for one-click deployment:
+
+1. Fork this repository
+2. Go to [render.com](https://render.com) → New → Web Service
+3. Connect your fork — Render auto-detects `render.yaml`
+4. Click **Deploy** — the model trains automatically on first boot
+
+> **Note:** Render free tier sleeps after 15 minutes of inactivity. First visit after sleep takes ~30 seconds.
 
 ---
 
-## Commands Reference
+## ⚙️ Commands Reference
 
 | Command | Purpose |
 |---|---|
@@ -258,18 +199,30 @@ curl -X POST https://intentlens.onrender.com/api/analyze \
 | `python app.py --transformer` | Run web app (DistilBERT) |
 | `python app.py --port 8080` | Run on custom port |
 | `python evaluate_models.py` | Full 3-model evaluation |
-| `python evaluate_models.py --skip-lstm` | Faster (LR + Transformer only) |
+| `python evaluate_models.py --skip-lstm` | Faster: LR + Transformer only |
 | `python compare_transformers.py` | Custom Transformer vs DistilBERT |
 
 ---
 
-## References
+## ⚖️ Ethical Considerations
 
-- Devlin et al. (2019). *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding.* NAACL-HLT 2019.
-- Sanh et al. (2019). *DistilBERT, a distilled version of BERT.* arXiv:1910.01108.
+- All training data is **synthetic** — no real personal conversations used
+- Predictions are **probabilistic**, not deterministic verdicts
+- Cultural and demographic variation is acknowledged but not modelled
+- Intended for **research and demonstration only**
+
+---
+
+## 📚 References
+
 - Vaswani et al. (2017). *Attention Is All You Need.* NeurIPS 2017.
+- Devlin et al. (2019). *BERT: Pre-training of Deep Bidirectional Transformers.* NAACL-HLT 2019.
+- Sanh et al. (2019). *DistilBERT, a distilled version of BERT.* arXiv:1910.01108.
 - Ranganath et al. (2009). *It's Not You, It's Me: Detecting Flirting in Speed-Dates.* EMNLP 2009.
 - Pei & Jurgens (2020). *Quantifying Intimacy in Language.* EMNLP 2020.
-- HuggingFace Transformers — https://huggingface.co/transformers
-- PyTorch — https://pytorch.org
-```
+
+---
+
+<div align="center">
+  <i>Built to explore the subtle boundary between "just friends" and something more 🤔</i>
+</div>
